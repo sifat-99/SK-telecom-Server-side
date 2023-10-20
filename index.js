@@ -114,7 +114,7 @@ run().catch(console.dir);
 // routes
 
 app.get('/', (req, res) => {
-    res.send('testing!');
+    res.send('Here is the main api... go to /products for the products!');
     });
 
     
