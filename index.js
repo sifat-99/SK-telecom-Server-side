@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 5001;
 
@@ -37,6 +37,62 @@ async function run() {
         console.log(result)
         res.send(result);
     });
+
+    app.post('/addProduct/Cart', async (req, res) => {
+        const order = req.body;
+        console.log(order)
+        const result = await client.db("SifStore").collection("Cart").insertOne(order);
+        console.log(result)
+        res.send(result);
+    }
+    );
+    app.get('/cart', async (req, res) => {
+        const cursor = client.db("SifStore").collection("Cart").find({});
+        const products = await cursor.toArray();
+        res.send(products);
+    }
+    );
+    // get single product from id
+    app.get('/products/:id', async (req, res) => {
+        const id = req.params.id;
+        console.log(id)
+        const query = { _id: new ObjectId(id) };
+        const product = await client.db("SifStore").collection("products").findOne(query);
+        res.send(product);
+    });
+
+    // Update single product from id
+    app.put('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const updatedProduct = req.body;
+      console.log('updating product', id)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          name: updatedProduct.name,
+          Price: updatedProduct.Price,
+          quantity: updatedProduct.quantity,
+          category: updatedProduct.category,
+          photo: updatedProduct.photo,
+        },
+      };
+      const result = await client.db("SifStore").collection("products").updateOne(filter, updateDoc, options);
+      console.log(result)
+      res.send(result);
+
+    })
+
+    app.delete('/cart/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log('deleting product', id)
+      const query = { _id: new ObjectId(id) };
+      const result = await client.db("SifStore").collection("Cart").deleteOne(query);
+      console.log(result)
+      res.send(result);
+    }
+    );
+
 
     app.get('/products', async (req, res) => {
         const cursor = client.db("SifStore").collection("products").find({});
